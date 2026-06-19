@@ -21,8 +21,8 @@ app.use(logger); // Activa nuestro registro de consola
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- 3. Rutas de la API (Las conectaremos en el próximo paso) ---
-// const usuarioRoutes = require('./routes/usuarioRoutes');
-// app.use('/api/usuarios', usuarioRoutes);
+const usuarioRoutes = require('./routes/usuarioRoutes');
+app.use('/api/usuarios', usuarioRoutes);
 
 // --- 4. Manejo de Errores ---
 // Middleware para Error 404 (Rutas que no existen)
