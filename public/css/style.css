@@ -1,0 +1,190 @@
+/* --- Variables y Reset --- */
+:root {
+    --primary-color: #6366f1; /* Un indigo moderno */
+    --primary-hover: #4f46e5;
+    --success-color: #10b981; /* Verde esmeralda suave */
+    --error-color: #ef4444;   /* Rojo coral */
+    --text-color: #1f2937;
+    --border-color: rgba(255, 255, 255, 0.3); /* Borde semi-transparente */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* 1. Fondo Degradado Animado */
+body {
+    /* Gradiente moderno y suave */
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px; /* Para que en móviles no pegue a los bordes */
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 2. Efecto Glassmorphism para el Formulario */
+.container {
+    background: rgba(255, 255, 255, 0.85); /* Blanco semi-transparente */
+    backdrop-filter: blur(12px); /* El efecto de cristal/desenfoque */
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); /* Sombra elegante */
+    width: 100%;
+    max-width: 550px;
+    padding: 40px 30px;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-header h2 {
+    color: var(--text-color);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-header p {
+    color: #4b5563;
+    font-size: 0.95rem;
+}
+
+/* --- Estilos de los Inputs y Micro-interacciones --- */
+.form-control {
+    margin-bottom: 22px;
+    position: relative;
+}
+
+.form-control label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.form-control input {
+    width: 100%;
+    padding: 14px 45px 14px 16px; 
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    outline: none;
+    transition: all 0.3s ease; /* Transición fluida */
+}
+
+/* 3. Mejora en el Focus */
+.form-control input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); /* Halo azul suave al hacer clic */
+}
+
+/* Ajuste fino para los textos de ayuda (placeholders) */
+.form-control input::placeholder {
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+/* --- Íconos y Mensajes de Error --- */
+.form-control i {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    visibility: hidden; 
+    transition: all 0.3s ease;
+}
+
+.form-control small {
+    color: var(--error-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 6px;
+    display: block;
+    visibility: hidden; 
+    opacity: 0; /* Para animación de aparición */
+    transition: opacity 0.3s ease;
+}
+
+/* --- Estados de Validación (JS activará estas clases) --- */
+.form-control.success input {
+    border-color: var(--success-color);
+    background: #f0fdf4; /* Fondo levemente verde */
+}
+.form-control.success input:focus {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+.form-control.success i.icon-success {
+    color: var(--success-color);
+    visibility: visible;
+}
+
+.form-control.error input {
+    border-color: var(--error-color);
+    background: #fef2f2; /* Fondo levemente rojo */
+}
+.form-control.error input:focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+.form-control.error i.icon-error {
+    color: var(--error-color);
+    visibility: visible;
+}
+.form-control.error small {
+    visibility: visible;
+    opacity: 1; /* Aparece suavemente */
+}
+
+/* --- Botón de Envío --- */
+button {
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+}
+
+button:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px); /* Se levanta un poco al pasar el mouse */
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+}
+
+/* Estado del botón deshabilitado */
+button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.7;
+}
