@@ -1,6 +1,5 @@
 // public/js/app.js
 
-// 1. Estado global del formulario
 const estadoFormulario = {
     username: false,
     email: false,
@@ -8,7 +7,6 @@ const estadoFormulario = {
     confirmPassword: false
 };
 
-// 2. Mensajes de error específicos
 const mensajesError = {
     username: 'Debe tener al menos 6 caracteres (letras y/o números).',
     email: 'El formato del correo electrónico no es válido.',
@@ -16,35 +14,14 @@ const mensajesError = {
     confirmPassword: 'Las contraseñas no coinciden.'
 };
 
-// --- NUEVO: Simulación de Base de Datos ---
-const dbSimulada = {
-    // Corregido: Nombres de usuario válidos (Mínimo 6 caracteres, sin caracteres especiales)
-    usernames: ['adminsys', 'devsenior', 'usuario123'],
-    emails: ['admin@correo.com', 'test@test.com', 'hola@mundo.com']
-};
-
-// Función que simula el retraso de una consulta real al servidor
-const simularConsultaDB = (tipo, valor) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            if (tipo === 'username') {
-                resolve(!dbSimulada.usernames.includes(valor)); // true si NO está en uso
-            } else if (tipo === 'email') {
-                resolve(!dbSimulada.emails.includes(valor));    // true si NO está en uso
-            }
-        }, 1200); // 1.2 segundos de retraso para que el usuario note el efecto
-    });
-};
-// ------------------------------------------
-
-// 3. Función principal que se ejecuta al escribir
+// 1. Función de validación local (Regex)
 const validarCampo = (e) => {
-    const campo = e.target.name; 
+    const campo = e.target.name;
     const valor = e.target.value;
     const idGrupo = `grupo-${campo}`;
     const small = document.querySelector(`#${idGrupo} .error-message`);
 
-    // Resetear estilos inline si existían de la validación asíncrona
+    // Resetear estilos del asincronismo
     small.style.visibility = '';
     small.style.opacity = '';
     small.style.color = '';
@@ -67,7 +44,7 @@ const validarCampo = (e) => {
             break;
         case 'password':
             esValido = validadores.esPasswordValido(valor);
-            validarConfirmacion(); 
+            validarConfirmacion();
             break;
         case 'confirmPassword':
             const passwordOriginal = document.getElementById('password').value;
@@ -86,40 +63,50 @@ const validarCampo = (e) => {
     verificarFormulario();
 };
 
-// --- NUEVO: Verificación Asíncrona en el Blur ---
+// --- NUEVO: CONEXIÓN REAL AL BACKEND (Verificar Disponibilidad) ---
 const verificarDisponibilidadAsincrona = async (e) => {
     const campo = e.target.name;
     const valor = e.target.value;
     const idGrupo = `grupo-${campo}`;
     const small = document.querySelector(`#${idGrupo} .error-message`);
 
-    // Solo consultamos la "BD" si el campo es usuario/correo y si ya pasó la validación Regex (está verde)
     if ((campo === 'username' || campo === 'email') && estadoFormulario[campo]) {
         
-        // Efecto visual de carga
-        small.innerText = 'Verificando disponibilidad...';
+        small.innerText = 'Consultando servidor...';
         small.style.visibility = 'visible';
         small.style.opacity = '1';
-        small.style.color = '#6b7280'; // Gris
-        DOM.toggleBotonSubmit(false); // Bloqueamos el botón mientras piensa
+        small.style.color = '#6b7280';
+        DOM.toggleBotonSubmit(false);
 
-        // Llamada a nuestra base de datos simulada
-        const estaDisponible = await simularConsultaDB(campo, valor);
+        try {
+            // Petición HTTP POST a nuestra propia API
+            const respuesta = await fetch('/api/usuarios/verificar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ campo, valor })
+            });
 
-        if (estaDisponible) {
-            DOM.mostrarExito(idGrupo);
-            small.innerText = campo === 'username' ? 'Nombre de usuario disponible' : 'Correo electrónico disponible';
-            small.style.color = 'var(--success-color)';
-            estadoFormulario[campo] = true;
-        } else {
-            DOM.mostrarError(idGrupo, campo === 'username' ? 'Nombre de usuario no disponible' : 'Correo electrónico no disponible');
+            const data = await respuesta.json();
+
+            if (data.disponible) {
+                DOM.mostrarExito(idGrupo);
+                small.innerText = campo === 'username' ? 'Nombre de usuario disponible' : 'Correo electrónico disponible';
+                small.style.color = 'var(--success-color)';
+                estadoFormulario[campo] = true;
+            } else {
+                DOM.mostrarError(idGrupo, campo === 'username' ? 'Nombre de usuario no disponible' : 'Correo electrónico no disponible');
+                estadoFormulario[campo] = false;
+            }
+        } catch (error) {
+            console.error("Error del Servidor:", error);
+            DOM.mostrarError(idGrupo, 'Error al conectar con la base de datos.');
             estadoFormulario[campo] = false;
         }
-        verificarFormulario(); 
+        
+        verificarFormulario();
     }
 };
 
-// 4. Función auxiliar
 const validarConfirmacion = () => {
     const inputConfirm = document.getElementById('confirmPassword');
     if (inputConfirm.value !== '') {
@@ -128,34 +115,69 @@ const validarConfirmacion = () => {
     }
 };
 
-// 5. Revisa si todo es verdadero
 const verificarFormulario = () => {
     const todoValido = Object.values(estadoFormulario).every(estado => estado === true);
     DOM.toggleBotonSubmit(todoValido);
 };
 
-// 6. Asignamos los eventos
 const inputs = document.querySelectorAll('#registroForm input');
 inputs.forEach((input) => {
-    input.addEventListener('keyup', validarCampo); 
-    
-    // Al perder el foco, validamos regex y luego verificamos disponibilidad
+    input.addEventListener('keyup', validarCampo);
     input.addEventListener('blur', (e) => {
         validarCampo(e);
         verificarDisponibilidadAsincrona(e);
     });
 });
 
-// 7. Evento final de envío
-document.getElementById('registroForm').addEventListener('submit', (e) => {
+// --- NUEVO: CONEXIÓN REAL AL BACKEND (Registrar Usuario) ---
+document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault(); 
+    
     if (Object.values(estadoFormulario).every(estado => estado === true)) {
-        alert('¡Formulario validado con éxito! Todos los campos son correctos.');
-        // Aquí se conectará el Frontend con el Backend
+        
+        const btnSubmit = document.getElementById('btnSubmit');
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = 'Registrando en MySQL...';
+
+        // Recolectamos los datos del formulario
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // Enviamos los datos a la ruta de registro
+            const respuesta = await fetch('/api/usuarios/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            const data = await respuesta.json();
+
+            if (respuesta.ok) {
+                // Alerta de éxito real
+                alert(`✅ ¡Éxito! ${data.message} (ID: ${data.usuarioId})`);
+                
+                // Limpiamos el formulario y los estados
+                document.getElementById('registroForm').reset();
+                Object.keys(estadoFormulario).forEach(key => estadoFormulario[key] = false);
+                inputs.forEach(input => DOM.limpiarEstado(`grupo-${input.name}`));
+                
+            } else {
+                // Si el servidor arroja un 400 o 409, lo mostramos
+                alert(`❌ Error: ${data.error.message}`);
+            }
+
+        } catch (error) {
+            alert('❌ Error crítico al intentar conectar con el servidor.');
+        } finally {
+            btnSubmit.innerText = 'Registrarse';
+            verificarFormulario();
+        }
     }
 });
 
-// 8. Funcionalidad Ver Contraseña
+// Funcionalidad Ver Contraseña
 const togglePasswordIcons = document.querySelectorAll('.toggle-password');
 togglePasswordIcons.forEach(icon => {
     icon.addEventListener('click', function() {
