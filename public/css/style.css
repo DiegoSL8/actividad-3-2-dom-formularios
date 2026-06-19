@@ -188,3 +188,33 @@ button:disabled {
     box-shadow: none;
     opacity: 0.7;
 }
+
+/* --- Funcionalidad Ver Contraseña --- */
+/* Estilos para el ícono del ojito */
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    visibility: visible !important; /* El ojito siempre se ve */
+    transition: color 0.3s ease;
+    z-index: 10;
+}
+
+.toggle-password:hover {
+    color: var(--primary-color); /* Se ilumina al pasar el mouse */
+}
+
+/* Ajustes para que los íconos no choquen entre sí */
+.input-wrapper.has-eye input {
+    padding-right: 75px; /* Más espacio interno a la derecha */
+}
+
+/* Movemos el check/error un poco a la izquierda para dejarle la esquina al ojito */
+.input-wrapper.has-eye i.icon-success,
+.input-wrapper.has-eye i.icon-error {
+    right: 45px;
+}
